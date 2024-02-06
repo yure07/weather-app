@@ -1,7 +1,7 @@
-import { useState } from "react"
+import { useEffect } from "react"
 import styled from "styled-components"
 
-const Container = styled.main`
+const Container = styled.article`
   display: flex;
   flex-direction: column;
   border: 1px solid blue;
@@ -11,8 +11,16 @@ const ContainerData = styled.section`
   display: flex;
   flex-direction: row;
   align-self: flex-start;
-  border: 1px solid red;
   margin-top: 12px;
+`
+
+const NumberTemp = styled.p`
+  margin-top: -12px;
+  margin-bottom: 12px;
+`
+
+const DescriptionWeather = styled(NumberTemp)`
+  margin-bottom: 0;
 `
 
 interface objectForecastType{
@@ -33,7 +41,6 @@ interface ForecastDescriptionType{
 export const ArrayForecast = ({value}: objectForecastType) => {
   const daysWeek = ['Segunda-feira', 'Terça-feira', 
     'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo']
-  const controlDaysWeek:Array<string> = []
   const fiveDaysAll:Array<string | DatesType> = []
 
   value?.map((obj: Object) => {
@@ -43,7 +50,13 @@ export const ArrayForecast = ({value}: objectForecastType) => {
       if(key === 'dt_txt') fiveDaysAll.push(value) 
       if(key === 'weather') fiveDaysAll.push(value)
     })
-  })   
+  }) 
+
+  const reorderFiveDays = (a:string | DatesType, b:string | DatesType):number => {
+    return -1
+  }
+  fiveDaysAll.sort(reorderFiveDays)
+  
   
   return(
     <Container>
@@ -52,30 +65,24 @@ export const ArrayForecast = ({value}: objectForecastType) => {
           return (
             <ContainerData key={index}> 
             {value.temp ? 
-              <p>
+              <NumberTemp>
                 min: {value.temp_min && value.temp_min.toFixed()}° / 
                 max: {value.temp_max && value.temp_max.toFixed()}°
-              </p>
+              </NumberTemp>
             : value.map((item: ForecastDescriptionType) => (
-              <p key={index}> {item.description} </p>
+              <DescriptionWeather key={index}> {item.description} </DescriptionWeather>
               ))}
             </ContainerData>
           )
         }
         else {
+          const justHour:string = value.split(" ")[1]
           const justDate:string = value.split(" ")[0]
           const newDate = new Date(justDate)
           const indexDayWeek = newDate.getDay()
           const dayToday:string = daysWeek[indexDayWeek]
-          /*if(!controlDaysWeek.includes(dayToday)){ 
-            controlDaysWeek.push(dayToday)
-            return(
-              <p key={index}> {dayToday} </p>
-            )
-          }*/
-          return <p key={index}> {dayToday} </p>
-          
-        }
+          return <p key={index}> {dayToday} - {justHour.slice(0, 5)}h </p>
+          }
       })}
     </Container>
   )
