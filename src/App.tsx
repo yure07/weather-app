@@ -1,9 +1,10 @@
 import './App.css';
 import styled from 'styled-components';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { getAllGeographic } from './api/geographicService';
-import { getAllForecast } from './api/forecastService';
+import { ChangeEvent, useState } from 'react';
 import { ArrayForecast } from './components/ArrayForecast';
+import { useDispatch, useSelector } from 'react-redux';
+import { getState, organizeData, useValue } from './redux/sliceForecasts';
+import { getOnApis } from './redux/sliceForecasts'; 
 
 const Container = styled.main`
   display: flex;
@@ -11,6 +12,7 @@ const Container = styled.main`
 `
 
 const PrimaryText = styled.h1`
+  font-size: 24px;
   margin: 24px 0;
   text-align: center;
 `
@@ -23,26 +25,26 @@ const ContainerInput = styled.div`
 const ContainerToSearch = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  width: 430px;
+  justify-content: center;
+  width: 100%;
   margin: 0px auto;
+  gap: 8px;
 `
 
 const InputSearchCity = styled.input`
-  width: 250px;
+  width: 200px;
   height: 50px;
   padding: 0 10px;
   border-radius: 8px;
 `
 
 const BtnSearch = styled.button`
-  width: 150px;
+  width: 120px;
   height: 50px;
   border: 0;
   border-radius: 8px;
   background-color: #3da8a8;
   font-size: 16px;
-  font-weight: 700;
   cursor: pointer;
 `
   
@@ -50,26 +52,32 @@ const App:React.FC = () => {
   const [city, setCity] = useState<string>('')
   const [allForecasts, setAllForecasts] = useState<Object[]>()
   const [showForecasts, setShowForecasts] = useState(false)
-
-  let latCity:number
-  let lonCity:number
+  const forecastInRedux = useSelector(useValue)
+  const dispatch = useDispatch()
 
   const handleClick = async () => {
-    setShowForecasts(true)
-    await getAllGeographic(city)
-      .then(data => {
-        latCity = data[0].lat
-        lonCity = data[0].lon
-      })
-    await getAllForecast(latCity, lonCity)
-      .then(list => {
-        setAllForecasts(list)
-      })
+    if (!forecastInRedux.cities.includes(city)) {
+      try {
+        // @ts-ignore
+        const list = await dispatch(getOnApis(city));
+        await dispatch(organizeData(list))
+        console.log(forecastInRedux)
+        //setShowForecasts(true)
+      } catch (error) {
+        console.error('Erro ao buscar dados da API:', error);
+      }
+    } else {
+      const indexForecast:number = forecastInRedux.cities.indexOf(city)
+      setAllForecasts(forecastInRedux.forecasts[indexForecast])
+      console.log(forecastInRedux.forecasts[indexForecast])
+      //setShowForecasts(true)
+    }
+    //console.log(forecastInRedux.cities)
   }
 
   return (
     <Container>
-      <PrimaryText>Digite cidade/estado/país para buscar e olhe o resultado no console</PrimaryText>
+      <PrimaryText>Digite cidade/estado/país para buscar</PrimaryText>
       <ContainerInput>
         <ContainerToSearch>
           <InputSearchCity 
@@ -79,7 +87,7 @@ const App:React.FC = () => {
           />
           <BtnSearch onClick={handleClick}>Buscar</BtnSearch>
         </ContainerToSearch>
-        {showForecasts && <ArrayForecast value={allForecasts}/>}
+        {showForecasts && <ArrayForecast value={allForecasts} city={city}/>}
       </ContainerInput>
     </Container>
   );
