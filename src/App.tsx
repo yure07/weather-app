@@ -48,17 +48,6 @@ const BtnSearch = styled.button`
   font-size: 16px;
   cursor: pointer;
 `
-
-interface DatesType{
-  temp: number,
-  temp_min: number,
-  temp_max: number,
-  dt_txt: string,
-  description: string,
-  map?: any,
-  split?: any
-}
-
   
 const App:React.FC = () => {
   const [city, setCity] = useState<string>('')
