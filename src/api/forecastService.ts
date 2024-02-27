@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiKey = 'a0a817507e53ba1b1dd72892648da088'
+const apiKey:string | undefined = process.env.REACT_APP_API_KEY
 
 export const getAllForecast = async (latCity:number, lonCity: number) => {
   let responseApi:Array<Object> = []
