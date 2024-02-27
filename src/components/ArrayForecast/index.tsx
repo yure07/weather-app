@@ -1,7 +1,4 @@
 import styled from "styled-components"
-import { useValue } from '../../redux/sliceForecasts'; 
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
 
 const Container = styled.article`
   display: flex;
@@ -55,9 +52,8 @@ const DayWeek = styled.p`
 `
 
 interface objectForecastType{
-  value: Object[] | undefined,
-  city: string,
-  map?: any
+  value: DatesType | undefined,
+  city: string
 }
 
 interface DatesType{
@@ -67,41 +63,47 @@ interface DatesType{
   dt_txt: string,
   description: string,
   map?: any,
+  split?: any
 }
 
 interface ForecastDescriptionType{
   description: string
 }
 
-export const ArrayForecast:React.FC<objectForecastType> = ({ value, city }) => {
-  const forecastsInRedux:[] = useSelector(useValue)
-  const dispatch = useDispatch()
+export const ArrayForecast = ({value, city}:objectForecastType) => {
   const daysWeek = ['Seg.', 'Ter.', 'Qua.', 'Qui.', 'Sex.', 'Sáb.', 'Dom.']
-  const fiveDaysAll:Array<string | DatesType> = []
-
-  const verifyInRedux = () => {
-    return forecastsInRedux.some((item:string | DatesType) => 
-      JSON.stringify(item) === JSON.stringify(fiveDaysAll))
-  }
-  
-  const verifyAndDispatch = () => {
-    const existsInRedux:boolean = verifyInRedux()
-    //if (!existsInRedux) dispatch(addCityForecast(fiveDaysAll))
-  }
-
-  useEffect(() => {
-    verifyAndDispatch();
-  },[fiveDaysAll])
   
   return(
     <Container>
       <CityName>{city.replace(/-/g, ' ').replace(/,/g, ' - ')}</CityName>
       <DataGeral>
 
-      {}
+      {value && value.map((item: DatesType | string, index: number) => {
+            return(
+              typeof item === 'string' ?
+              (
+              <DayWeek key={`key-day-week${index}`}>
+                {daysWeek[new Date(item.split(" ")[0]).getDay()]} - {item.split(" ")[1].slice(0, 2)}h
+              </DayWeek>
+              )
+            :
+              <ContainerData key={`key-container-data${index}`}>
+                {item.temp ? 
+                  <NumberTemp>
+                    {item.temp_min.toFixed()}°/ 
+                    {item.temp_max.toFixed()}°
+                  </NumberTemp>
+                : item.map((objectDescription: ForecastDescriptionType) => (
+                    <DescriptionWeather key={`key-description-weather${index}`}> 
+                      {objectDescription.description} 
+                    </DescriptionWeather>
+                  ))}
+              </ContainerData>
+            )
+        })        
+      }
         
       </DataGeral>
-      <button style={{'marginTop': '-20px'}} onClick={() => console.log(forecastsInRedux)}>Pega dados do redux</button>
     </Container>
   )
 }

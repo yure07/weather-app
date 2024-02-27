@@ -3,8 +3,9 @@ import styled from 'styled-components';
 import { ChangeEvent, useState } from 'react';
 import { ArrayForecast } from './components/ArrayForecast';
 import { useDispatch, useSelector } from 'react-redux';
-import { getState, organizeData, useValue } from './redux/sliceForecasts';
-import { getOnApis } from './redux/sliceForecasts'; 
+import { addForecast, useValue } from './redux/sliceForecasts';
+import { getOnApis } from './redux/api'; 
+import { organizeData } from './components/organizeData';
 
 const Container = styled.main`
   display: flex;
@@ -47,10 +48,21 @@ const BtnSearch = styled.button`
   font-size: 16px;
   cursor: pointer;
 `
+
+interface DatesType{
+  temp: number,
+  temp_min: number,
+  temp_max: number,
+  dt_txt: string,
+  description: string,
+  map?: any,
+  split?: any
+}
+
   
 const App:React.FC = () => {
   const [city, setCity] = useState<string>('')
-  const [allForecasts, setAllForecasts] = useState<Object[]>()
+  const [allForecasts, setAllForecasts] = useState<any>()
   const [showForecasts, setShowForecasts] = useState(false)
   const forecastInRedux = useSelector(useValue)
   const dispatch = useDispatch()
@@ -58,21 +70,21 @@ const App:React.FC = () => {
   const handleClick = async () => {
     if (!forecastInRedux.cities.includes(city)) {
       try {
+        const listFunction = getOnApis(city);
+        const list:Object[] = await listFunction(dispatch)
         // @ts-ignore
-        const list = await dispatch(getOnApis(city));
-        await dispatch(organizeData(list))
-        console.log(forecastInRedux)
-        //setShowForecasts(true)
+        const result:Object[] = organizeData(list)
+        dispatch(addForecast(result))
+        setAllForecasts(result)
+        setShowForecasts(true)
       } catch (error) {
         console.error('Erro ao buscar dados da API:', error);
       }
     } else {
       const indexForecast:number = forecastInRedux.cities.indexOf(city)
       setAllForecasts(forecastInRedux.forecasts[indexForecast])
-      console.log(forecastInRedux.forecasts[indexForecast])
-      //setShowForecasts(true)
+      setShowForecasts(true)
     }
-    //console.log(forecastInRedux.cities)
   }
 
   return (
