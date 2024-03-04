@@ -12,6 +12,12 @@ const Container = styled.main`
   flex-direction: column;
 `
 
+const NameProject = styled.h1`
+  font-size: 24px;
+  margin-top: 24px;
+  text-align: center;
+`
+
 const PrimaryText = styled.h1`
   font-size: 24px;
   margin: 24px 0;
@@ -78,7 +84,8 @@ const App:React.FC = () => {
 
   return (
     <Container>
-      <PrimaryText>Digite cidade/estado/país para buscar</PrimaryText>
+      <NameProject>Weather App</NameProject>
+      <PrimaryText>Digite cidade,estado,país para buscar a previsão do tempo</PrimaryText>
       <ContainerInput>
         <ContainerToSearch>
           <InputSearchCity 
